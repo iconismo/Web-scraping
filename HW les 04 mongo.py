@@ -10,9 +10,7 @@ from pprint import pprint
 def get_vac_names(resp_text):
     div = str(resp_text.find_all('div', {'class': ['clearfix vacancy premium ',
                                                    'clearfix vacancy']}))
-
     h2 = soup(div, 'lxml').find_all('h2')
-
     vac_names = []
 
     for i in h2:
@@ -23,7 +21,6 @@ def get_vac_names(resp_text):
 
 def time_ago(resp_text):
     span = resp_text.find_all('span', {'class': 'date'})
-
     time_ago = []
 
     for i in range(0, len(span)):
@@ -35,32 +32,24 @@ def time_ago(resp_text):
 
 def post_datetime(time_ago, resp_text):
     time_ago = time_ago(resp_text)
-
     date_time = []
 
     for i in time_ago:
-
         now = datetime.now()
 
         if not i:
             date_time.append(0)
-
         else:
-
             num, rest = i.split(' ', 1)
 
             if rest.startswith('ч'):
                 date_time.append(now - timedelta(hours=int(num)))
-
             elif rest.startswith('д'):
                 date_time.append(now - timedelta(days=int(num)))
-
             elif rest.startswith('н'):
                 date_time.append(now - timedelta(weeks=int(num)))
-
             elif rest.startswith('м'):
                 date_time.append(now - timedelta(weeks=int(num) * 4))
-
             else:
                 date_time.append(0)
 
@@ -69,7 +58,6 @@ def post_datetime(time_ago, resp_text):
 
 def get_salaries(resp_text):
     h2 = resp_text.find_all('h2')
-
     salaries = []
 
     for i in h2:
@@ -96,7 +84,6 @@ def get_links(resp_text):
 
 def get_id(get_links):
     vac_links = get_links
-
     ids = []
 
     for i in vac_links:
@@ -117,7 +104,6 @@ def hirer(resp_text):
     h2 = str(soup(div, 'lxml').find_all('h2'))
 
     a = list(soup(h2, 'lxml').find_all('a'))
-
     hirers = []
 
     for i in range(0, len(a)):
@@ -148,28 +134,20 @@ def hirer(resp_text):
 def salary_separator(resp_text):
     ot = []
     do = []
-
     salaries = get_salaries(resp_text)
 
     for i in salaries:
-
         if i.startswith('от'):
             ot.append(int(i[2:]))
             do.append(0)
 
         elif i.startswith('до'):
-
             if i.startswith('дог'):
                 ot.append(-1)
                 do.append(-1)
-
             else:
                 do.append(int(i[2:]))
                 ot.append(0)
-
-        #     elif i[0].isnumeric():
-        #       ot.append(int(i))
-        #       do.append(int(i))
 
         else:
             a = i.split('—')
@@ -235,17 +213,7 @@ with requests.Session() as session:
         result = result.append(df, ignore_index=True)
 
 # result.info()
-
-result.head(3)
-
-# print(len(get_vac_names(resp_text)))
-# print(len(get_salaries(resp_text)))
-# print(len(get_links(resp_text)))
-# print(len(salary_separator(resp_text)[0]))
-# print(len(salary_separator(resp_text)[1]))
-# print(len(post_datetime(time_ago, resp_text)))
-# print(len(hirer(resp_text)))
-# print(len(get_id(vac_links)))
+# result.head(3)
 
 # Добавление записей в MongoDB
 
@@ -255,10 +223,9 @@ client = MongoClient('mongodb://127.0.0.1:27017')
 vacs = client['vacs']
 db = vacs.vacs
 
-
 for i in range(0, result.shape[0]):
 
-    counter = 0
+    counter = 0 #TODO доделать для отображения кол-ва новых добавленных записей
 
     row = result.iloc[[i]].to_dict(orient='index')
 
@@ -272,9 +239,9 @@ for i in range(0, result.shape[0]):
 
 for i in db.find({}):
     print(i)
-    
+
 # Вывод:
-# Чтобы не устраивать свалку - вывел только несколько первых элементов и заменил id, link на Х, Но вывод верный.
+# Вывод верный но, чтобы не устраивать свалку - вывел только несколько первых элементов и заменил id, link на Х для экономии места.
 
 # gorodrabot.ru status code is: 200
 # Обработка страницы 1 из 1

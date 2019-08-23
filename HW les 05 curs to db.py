@@ -22,7 +22,7 @@ def curs_dict(day_from=day_from, day_to=day_to, month=month):
 
     for day in range(day_from, day_to):
         if day < 10:
-            day = f'0{day}'
+            day = f'0{day}' # если день месяца до 10, то подставляем строковый "0" для соответствию формату даты в запросе.
             date = f'2019-{month}-{day}'
             money = client.service.GetCursOnDate(date)
             val = money._value_1._value_1[10]['ValuteCursOnDate']['Vcurs']
@@ -40,7 +40,6 @@ def curs_dict(day_from=day_from, day_to=day_to, month=month):
 def sorted_curs(curs_dict):
 # ф-ция для сортировки словаря по значениям (от меньшего курса к большему). 
 # Возвращает отсортированный словарь
-# Тут я немного перемудрил и надо было сделать функцию по другому, но переделать возможности уже нет.
 
     curs = curs_dict()
 
@@ -52,6 +51,7 @@ def sorted_curs(curs_dict):
 def output(sorted_curs, curs_dict):
 # ф-ция вывода. Сравнивает ключи (строковые даты) наименьшего и наибольшего значений курса
 # в отсортированном словаре первое и последнее значение соответственно.
+# Тут я немного перемудрил и надо было сделать функцию по другому, но переделать возможности уже нет.
 
     curs_dict = sorted_curs(curs_dict)
 

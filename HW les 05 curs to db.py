@@ -13,6 +13,8 @@ day_to = 23
 
 
 def curs_dict(day_from=day_from, day_to=day_to, month=month):
+# ф-ция для формирования словаря (дата: курс валюты). Возвращает словарь.
+
     curs = {}
 
     for day in range(day_from, day_to):
@@ -33,6 +35,9 @@ def curs_dict(day_from=day_from, day_to=day_to, month=month):
     return curs
 
 def sorted_curs(curs_dict):
+# ф-ция для сортировки словаря по значениям (от меньшего курса к большему). 
+# Возвращает отсортированный словарь
+
     curs = curs_dict()
 
     sorted_curs = sorted(curs.items(), key=lambda item: item[1])
@@ -41,14 +46,18 @@ def sorted_curs(curs_dict):
 
 
 def output(sorted_curs, curs_dict):
+# ф-ция вывода. Сравнивает ключи (строковые даты) наименьшего и наибольшего значений курса
+# в отсортированном словаре первое и последнее значение соответственно.
+
     curs_dict = sorted_curs(curs_dict)
 
-    sml_val_dat = dt.strptime(curs_dict[0][0], '%Y-%m-%d').date()
-    gt_val_dat = dt.strptime(curs_dict[-1][0], '%Y-%m-%d').date()
+    sml_val_dat = dt.strptime(curs_dict[0][0], '%Y-%m-%d').date() # дата меньшего курса (первый элем.)
+    gt_val_dat = dt.strptime(curs_dict[-1][0], '%Y-%m-%d').date() # дата большего курса (последний элем)
 
-    sml_val = curs_dict[0][1]
-    gt_val = curs_dict[-1][1]
+    sml_val = curs_dict[0][1] # меньший курс (первый элем.)
+    gt_val = curs_dict[-1][1] # больший курс (последний элем.)
 
+#   если дата большего курса раньше даты меньшего, то они меняются местами в выводе, прибыль всегда положительна.
     if gt_val_dat < sml_val_dat:
         print(f'Валюту USD выгодно было купить {gt_val_dat}, а продать {sml_val_dat}.'
               f' Прибыль: {round(gt_val - sml_val, 4)}')
@@ -58,7 +67,7 @@ def output(sorted_curs, curs_dict):
               f' Прибыль: {round(gt_val - sml_val, 4)}')
 
 
-output(sorted_curs, curs_dict)
+output(sorted_curs, curs_dict) # вывод по форме в задании ("Валюту USD выгодно было купить...")
 
 dbclient = MongoClient('mongodb://127.0.0.1:27017')
 
@@ -67,9 +76,11 @@ cursdb = cursdb.cursdb
 
 curs_dict = curs_dict()
 
+# Добавляем в БД данные по каждому дню через цикл
 for k, v in curs_dict.items():
     cursdb.insert_one({'date': k, 'curs': v})
 
+# Про веряем данные на наличие в БД    
 for i in cursdb.find({}):
     print(i)
 

@@ -3,25 +3,29 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from selenium.webdriver.support import expected_conditions as EC
+import time
+
 from pymongo import MongoClient
 
 lgn = None
 psw = None
 
-#
 driver = webdriver.Chrome()
 driver.get("https://gmail.com")
 
 # Передаем логин
-login = driver.find_element_by_xpath('//*[@id="identifierId"]').send_keys(lgn)
-driver.find_element_by_xpath('//*[@id="identifierNext"]/span/span').click()
+login = driver.find_element_by_css_selector('#identifierId').send_keys(lgn)
 
-#  Передаем в пароль
+# next button click
+driver.find_element_by_css_selector('#identifierNext').click()
+
+# Передаем в пароль
 password = wait(driver, 10).until(
-    EC.presence_of_element_located((By.XPATH, '//*[@id="password"]/div[1]/div/div[1]/input'))).send_keys(psw)
-
-# password.send_keys(psw)
-driver.find_element_by_xpath('//*[@id="passwordNext"]').click()
+    EC.presence_of_element_located((By.CSS_SELECTOR, '#password > div.aCsJod.oJeWuf > '
+                                                     'div > div.Xb9hP > input'))).send_keys(psw)
+# next button click
+wait(driver, 20).until(
+    EC.presence_of_element_located((By.CSS_SELECTOR, '#passwordNext'))).click()
 
 # Ищем поисковую строку в ящике по xpath
 search = wait(driver, 20).until(
@@ -36,32 +40,40 @@ letters = wait(driver, 10).until(
     EC.presence_of_element_located((By.XPATH, '//*[@id=":nw"]/tbody')))
 
 # Список писем
-trs = letters.find_elements_by_tag_name('tr')
+trs = letters.find_elements_by_css_selector('tr.zA')
 
 #  В цикле кликаем на каждое письмо и заходим в него.
 for tr in trs[:10]:
     tr.click()
 
     title = wait(driver, 20).until(
-        EC.invisibility_of_element_located((By.CSS_SELECTOR, '#\:17o'))) # True
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'h2.hP'))).text
 
-    #  Элемент невидимый, невозможно его как-либо зафиксировать или выбрать. С остальными элементами
-    # которые нужны - тоже самое.
-    break
+    sender = wait(driver, 20).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'span.go'))).text[1:-1]
+
+    date = wait(driver, 20).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'span.g3'))).get_attribute('title')
+
+    date, time_ = date.split(',')
+
+    text = wait(driver, 20).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, '.ii.gt'))).text
+
+    driver.back()
+    time.sleep(2)
+
+driver.quit()
+
+# TODO Доделать добавление в Монго, остальное сделано.
 
 
-    # title = driver.find_element_by_xpath('//*[@id=":1"]/div/div[3]/div/table/tr/td[1]/div[2]/div[1]/div[2]/div[1]').text
 
-    # sender = driver.find_element_by_xpath('//*[@id=":177"]/div[1]/div[2]/div[1]/table/tbody/'
-    #                                       'tr[1]/td[1]/table/tbody/tr/td/h3/span[1]/span[1]').get_attribute('email')
-
-    # date = driver.find_element_by_xpath('//*[@id=":1s4"]').text
-    # body = driver.find_element_by_xpath('//*[@id="m_7877200117708243263bodyCell"]').text
-
-print(f'{title}\n')
-    # print(f'{sender}\n')
-    # print(f'{date}\n')
-    # print(f'{body}\n')
+# print(f'{title}\n')
+# print(f'{sender}\n')
+# print(f'{date}\n')
+# print(f'{time_}\n')
+# print(f'{text}\n')
 
 
 

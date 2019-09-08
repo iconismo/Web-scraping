@@ -3,15 +3,24 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait as wait
 from selenium.webdriver.support import expected_conditions as EC
+from pymongo import MongoClient
 import time
 
-from pymongo import MongoClient
+# mongo клиент
+client = MongoClient('mongodb://127.0.0.1:27017')
+gmail = client['gmail']
+db = gmail.gmail
 
 lgn = None
 psw = None
 
 driver = webdriver.Chrome()
 driver.get("https://gmail.com")
+
+# Ф-ция ожидания элемента
+def Wait(CSS, driver=driver,):
+    return wait(driver, 20).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, CSS)))
 
 # Передаем логин
 login = driver.find_element_by_css_selector('#identifierId').send_keys(lgn)
@@ -20,12 +29,10 @@ login = driver.find_element_by_css_selector('#identifierId').send_keys(lgn)
 driver.find_element_by_css_selector('#identifierNext').click()
 
 # Передаем в пароль
-password = wait(driver, 10).until(
-    EC.presence_of_element_located((By.CSS_SELECTOR, '#password > div.aCsJod.oJeWuf > '
-                                                     'div > div.Xb9hP > input'))).send_keys(psw)
+password = Wait('#password > div.aCsJod.oJeWuf > div > div.Xb9hP > input').send_keys(psw)
+
 # next button click
-wait(driver, 20).until(
-    EC.presence_of_element_located((By.CSS_SELECTOR, '#passwordNext'))).click()
+Wait('#passwordNext').click()
 
 # Ищем поисковую строку в ящике по xpath
 search = wait(driver, 20).until(
@@ -46,35 +53,32 @@ trs = letters.find_elements_by_css_selector('tr.zA')
 for tr in trs[:10]:
     tr.click()
 
-    title = wait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'h2.hP'))).text
+    title = Wait('h2.hP').text
 
-    sender = wait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'span.go'))).text[1:-1]
+    sender = Wait('span.go').text[1:-1]
 
-    date = wait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'span.g3'))).get_attribute('title')
+    date = Wait('span.g3').get_attribute('title')
 
     date, time_ = date.split(',')
 
-    text = wait(driver, 20).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, '.ii.gt'))).text
+    text = Wait('.ii.gt').text
+
+    db.insert_one({'title': title,
+                   'sender': sender,
+                   'date': date,
+                   'time': time_,
+                   'body': text})
 
     driver.back()
     time.sleep(2)
 
 driver.quit()
 
-# TODO Доделать добавление в Монго, остальное сделано.
-
-
+for i in db.find({}):
+    print(i)
 
 # print(f'{title}\n')
 # print(f'{sender}\n')
 # print(f'{date}\n')
 # print(f'{time_}\n')
 # print(f'{text}\n')
-
-
-
-# driver.quit()
